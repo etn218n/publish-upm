@@ -7,15 +7,11 @@ const PackageStatus = {
     Published: 2,
 }
 
-function checkPackageStatus(version, name, registry) {
-    try {
-        let result = execSync(`npm view ${name} versions --registry ${registry}`);
-        let publishedVersions = JSON.parse(result.toString().replace(/'/g, '"'));
-        return publishedVersions.includes(version) ? PackageStatus.Published : PackageStatus.NotPublished;
-    }
-    catch (error) {
+function checkPackageStatus(version, name, storageDirectory) {
+    if (fs.existsSync(`${storageDirectory}${name}`))
+        return fs.existsSync(`${storageDirectory}${name}/${name}-${version}.tgz`) ? PackageStatus.Published : PackageStatus.NotPublished;
+    else
         return PackageStatus.NotExist;
-    }
 }
 
 function pack() {
@@ -29,14 +25,15 @@ function publishFirstVersion(registry) {
 }
 
 function publish(manifest, registry, storageDirectory) {
-    const publishStatus = checkPackageStatus(manifest.version, manifest.name, registry);
+    storageDirectory = processStorageDirectory(storageDirectory);
+    const publishStatus = checkPackageStatus(manifest.version, manifest.name, storageDirectory);
     switch (publishStatus) {
         case PackageStatus.Published:
             console.log('Version already published');
             break;
         case PackageStatus.NotPublished:
             let tgz = pack();
-            let packageDirectory = `${storageDirectory}/${manifest.name}`;
+            let packageDirectory = `${storageDirectory}${manifest.name}`;
             let npmManifest = require(`${packageDirectory}/package.json`);
             fs.renameSync(tgz.filename, `${packageDirectory}/${tgz.filename}`);
             let updatedNpmManifest = updateNpmManifest(npmManifest, manifest, tgz.filename, tgz.shasum, tgz.integrity, registry);
@@ -48,11 +45,18 @@ function publish(manifest, registry, storageDirectory) {
     }
 }
 
+function processStorageDirectory(storageDirectory) {
+    if (storageDirectory.endsWith('/'))
+        return storageDirectory;
+    else
+        return `${storageDirectory}/`;
+}
+
 function updateNpmManifest(npmManifest, manifest, tgzFile, shasum, integrity, registry) {
     return {
         'name': npmManifest.name,
         'versions': updateVersions(npmManifest, manifest, tgzFile, shasum, integrity, registry),
-        'time': updateTimeObject(npmManifest),
+        'time': updateTimeObject(npmManifest, manifest),
         'users': npmManifest.users,
         'dist-tags': {
             "latest": manifest.version
@@ -60,6 +64,7 @@ function updateNpmManifest(npmManifest, manifest, tgzFile, shasum, integrity, re
         '_uplinks': { },
         '_distfiles': { },
         '_attachments': updateAttachments(npmManifest, manifest, tgzFile, shasum),
+        '_rev': npmManifest._rev,
         '_id': npmManifest.name,
         'readme': getReadmeContent(),
     };
@@ -84,14 +89,16 @@ function updateVersions(npmManifest, manifest, tgzFile, shasum, integrity, regis
     return versions;
 }
 
-function updateTimeObject(npmManifest) {
+function updateTimeObject(npmManifest, manifest) {
+    let modifiedTime = new Date().toISOString();
     let time = { 
         'created': npmManifest.time.created,
-        'modified': new Date().toISOString(),
+        'modified': modifiedTime,
     };
     for (let version in npmManifest.versions) {
         time[version] = npmManifest.time[version];
     }
+    time[manifest.version] = modifiedTime;
     return time;
 }
 
@@ -105,49 +112,6 @@ function updateAttachments(npmManifest, manifest, tgzFile, shasum) {
         "version": manifest.version
     };
     return attachments;
-}
-
-function createManifest(jsonFile, tgzFile, shasum, integrity, registry) {
-    let json = require(jsonFile);
-    return {
-        'name': json.name,
-        'versions': getFirstVersion(json, tgzFile, shasum, integrity, registry),
-        'time': {
-            'created': new Date().toISOString(),
-            'modified': new Date().toISOString(),
-            [json.version]: new Date().toISOString()
-        },
-        'users': { },
-        'dist-tags': {
-            "latest": json.version
-        },
-        '_uplinks': { },
-        '_distfiles': { },
-        '_attachments': {
-            [tgzFile]: {
-                "shasum": shasum,
-                "version": json.version
-            }
-        },
-        '_id': json.name,
-        'readme': getReadmeContent(),
-    }
-}
-
-function getFirstVersion(json, tgzFile, shasum, integrity, registry) {
-    let versions = { };
-    versions[json.version] = json;
-    versions[json.version]._id = `${json.name}@${json.version}`;
-    versions[json.version].readmeFilename = 'README.md';
-    versions[json.version]._nodeVersion = getNodeVersion();
-    versions[json.version]._npmVersion = getNpmVersion();
-    versions[json.version].dist = {
-        'integrity': integrity,
-        'shasum': shasum,
-        'tarball': `${registry}/${json.name}/-/${tgzFile}`
-    }
-    versions[json.version].contributors = [];
-    return versions;
 }
 
 function getNodeVersion() {
@@ -169,7 +133,5 @@ function getReadmeContent() {
     return fs.existsSync('./README.md') ? fs.readFileSync('README.md').toString() : 'ERROR: No README data found!';
 }
 
-module.exports.isVersionAlreadyPublished = checkPackageStatus;
 module.exports.pack = pack;
 module.exports.publish = publish;
-module.exports.createManifest = createManifest;
