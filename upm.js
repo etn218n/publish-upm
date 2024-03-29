@@ -25,22 +25,22 @@ function publishFirstVersion(registry) {
 }
 
 function publish(manifest, registry, storageDirectory) {
-    const publishStatus = checkPackageStatus(manifest.version, manifest.name, storageDirectory);
+    let publishStatus = checkPackageStatus(manifest.version, manifest.name, storageDirectory);
+    let packageDirectory = `${storageDirectory}${manifest.name}`;
     switch (publishStatus) {
         case PackageStatus.Published:
             console.log('Version already published');
             break;
         case PackageStatus.NotPublished:
             let tgz = pack();
-            let packageDirectory = `${storageDirectory}${manifest.name}`;
             let npmManifest = require(`${packageDirectory}/package.json`);
             fs.renameSync(tgz.filename, `${packageDirectory}/${tgz.filename}`);
             let updatedNpmManifest = updateNpmManifest(npmManifest, manifest, tgz.filename, tgz.shasum, tgz.integrity, registry);
             fs.writeFileSync(`${packageDirectory}/package.json`, JSON.stringify(updatedNpmManifest, null, 2));
-            break;
+            return packageDirectory;
         case PackageStatus.NotExist:
             publishFirstVersion(registry);
-            break;
+            return packageDirectory;
     }
 }
 
