@@ -1,8 +1,8 @@
 {
-  "name": "com.duy.something",
-  "version": "1.8.0",
-  "displayName": "Nolib",
-  "description": "Library for node-based state machine and other data structures",
+  "name": "com.duy.blob",
+  "version": "1.3.0",
+  "displayName": "Blob",
+  "description": "Test large data",
   "unity": "2023.2",
   "documentationUrl": "",
   "changelogUrl": "",

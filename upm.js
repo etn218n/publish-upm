@@ -25,7 +25,6 @@ function publishFirstVersion(registry) {
 }
 
 function publish(manifest, registry, storageDirectory) {
-    storageDirectory = processStorageDirectory(storageDirectory);
     const publishStatus = checkPackageStatus(manifest.version, manifest.name, storageDirectory);
     switch (publishStatus) {
         case PackageStatus.Published:
@@ -43,13 +42,6 @@ function publish(manifest, registry, storageDirectory) {
             publishFirstVersion(registry);
             break;
     }
-}
-
-function processStorageDirectory(storageDirectory) {
-    if (storageDirectory.endsWith('/'))
-        return storageDirectory;
-    else
-        return `${storageDirectory}/`;
 }
 
 function updateNpmManifest(npmManifest, manifest, tgzFile, shasum, integrity, registry) {
