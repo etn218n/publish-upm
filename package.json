@@ -1,7 +1,7 @@
 {
-  "name": "com.duy.meh",
+  "name": "com.duy.test-jenkins",
   "version": "1.0.0",
-  "displayName": "Blob",
+  "displayName": "com.duy.test-jenkins",
   "description": "Test large data",
   "unity": "2023.2",
   "documentationUrl": "",
