@@ -1,11 +1,21 @@
 ﻿const {execSync} = require('child_process');
 const fs = require('fs');
 
-function checkIfVersionAlreadyPublished(version, jsonFile, registry) {
-    let packageJson = require(jsonFile);
-    let result = execSync(`npm view ${packageJson.name} versions --registry ${registry}`);
-    let publishedVersions = JSON.parse(result.toString().replace(/'/g, '"'));
-    return publishedVersions.includes(version);
+const PackageStatus = {
+    NotExist: 0,
+    NotPublished: 1,
+    Published: 2,
+}
+
+function checkPackageStatus(version, name, registry) {
+    try {
+        let result = execSync(`npm view ${name} versions --registry ${registry}`);
+        let publishedVersions = JSON.parse(result.toString().replace(/'/g, '"'));
+        return publishedVersions.includes(version) ? PackageStatus.Published : PackageStatus.NotPublished;
+    }
+    catch (error) {
+        return PackageStatus.NotExist;
+    }
 }
 
 function pack() {
@@ -14,14 +24,26 @@ function pack() {
     return packageJson[0];
 }
 
-function createPackage(jsonFile, outputDirectory, registry) {
-    let json = require(jsonFile);
-    let tgz = pack(jsonFile);
-    let manifest = createManifest(jsonFile, tgz.filename, tgz.shasum, tgz.integrity, registry);
-    outputDirectory += json.name + '/';
-    fs.mkdirSync(outputDirectory, { recursive: true });
-    fs.writeFileSync(outputDirectory + 'package.json', JSON.stringify(manifest, null, 2));
-    fs.renameSync(tgz.filename, outputDirectory + tgz.filename);
+function publishFirstVersion(registry) {
+    execSync(`npm publish --registry ${registry}`);
+}
+
+function publish(manifest, registry, storageDirectory) {
+    const publishStatus = checkPackageStatus(manifest.version, manifest.name, registry);
+    switch (publishStatus) {
+        case PackageStatus.Published:
+            console.log('Version already published');
+            break;
+        case PackageStatus.NotPublished:
+            let tgz = pack();
+            let packageDirectory = `${storageDirectory}/${manifest.name}`;
+            //let npmManifest = require(`${outputDirectory}/package.json`);
+            fs.renameSync(tgz, `${packageDirectory}/${tgz}`);
+            break;
+        case PackageStatus.NotExist:
+            publishFirstVersion(registry);
+            break;
+    }
 }
 
 function createManifest(jsonFile, tgzFile, shasum, integrity, registry) {
@@ -86,7 +108,7 @@ function getReadmeContent() {
     return fs.existsSync('./README.md') ? fs.readFileSync('README.md').toString() : 'ERROR: No README data found!';
 }
 
-module.exports.isVersionAlreadyPublished = checkIfVersionAlreadyPublished;
+module.exports.isVersionAlreadyPublished = checkPackageStatus;
 module.exports.pack = pack;
-module.exports.createPackage = createPackage;
+module.exports.publish = publish;
 module.exports.createManifest = createManifest;

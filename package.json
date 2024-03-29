@@ -1,6 +1,6 @@
 {
-  "name": "com.duy.nolib",
-  "version": "1.4.0",
+  "name": "com.duy.something",
+  "version": "1.5.0",
   "displayName": "Nolib",
   "description": "Library for node-based state machine and other data structures",
   "unity": "2023.2",
