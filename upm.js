@@ -34,7 +34,8 @@ function publish(manifest, registry, storageDirectory) {
         case PackageStatus.NotPublished:
             let tgz = pack();
             let npmManifest = require(`${packageDirectory}/package.json`);
-            fs.renameSync(tgz.filename, `${packageDirectory}/${tgz.filename}`);
+            fs.copyFileSync(tgz.filename, `${packageDirectory}/${tgz.filename}`);
+            fs.unlinkSync(tgz.filename);
             let updatedNpmManifest = updateNpmManifest(npmManifest, manifest, tgz.filename, tgz.shasum, tgz.integrity, registry);
             fs.writeFileSync(`${packageDirectory}/package.json`, JSON.stringify(updatedNpmManifest, null, 2));
             return packageDirectory;
