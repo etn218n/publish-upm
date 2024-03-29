@@ -37,13 +37,38 @@ function publish(manifest, registry, storageDirectory) {
         case PackageStatus.NotPublished:
             let tgz = pack();
             let packageDirectory = `${storageDirectory}/${manifest.name}`;
-            //let npmManifest = require(`${outputDirectory}/package.json`);
-            fs.renameSync(tgz, `${packageDirectory}/${tgz}`);
+            let npmManifest = require(`${outputDirectory}/package.json`);
+            fs.renameSync(tgz.filename, `${packageDirectory}/${tgz.filename}`);
+            let updatedNpmManifest = updateNpmManifest(npmManifest, manifest, tgz.filename, tgz.shasum, tgz.integrity, registry);
+            fs.writeFileSync(`${outputDirectory}/package.json`, JSON.stringify(updatedNpmManifest, null, 2));
             break;
         case PackageStatus.NotExist:
             publishFirstVersion(registry);
             break;
     }
+}
+
+function updateNpmManifest(npmManifest, manifest, tgzFile, shasum, integrity, registry) {
+    npmManifest[version] = manifest;
+    npmManifest[version]._id = `${manifest.name}@${manifest.version}`;
+    npmManifest[version].readmeFilename = 'README.md';
+    npmManifest[version]._nodeVersion = getNodeVersion();
+    npmManifest[version]._npmVersion = getNpmVersion();
+    npmManifest[version].dist = {
+        'integrity': integrity,
+        'shasum': shasum,
+        'tarball': `${registry}/${manifest.name}/-/${tgzFile}`
+    }
+    npmManifest[version].contributors = [];
+    npmManifest['time']['modified'] = new Date().toISOString();
+    npmManifest['time'][manifest.version] = new Date().toISOString();
+    npmManifest['dist-tag'].latest = manifest.version;
+    npmManifest['_attachments'][tgzFile] = {
+        "shasum": shasum,
+        "version": manifest.version
+    }
+    npmManifest['readme'] = getReadmeContent();
+    return npmManifest;
 }
 
 function createManifest(jsonFile, tgzFile, shasum, integrity, registry) {
