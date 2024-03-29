@@ -49,26 +49,62 @@ function publish(manifest, registry, storageDirectory) {
 }
 
 function updateNpmManifest(npmManifest, manifest, tgzFile, shasum, integrity, registry) {
-    npmManifest[manifest.version] = manifest;
-    npmManifest[manifest.version]._id = `${manifest.name}@${manifest.version}`;
-    npmManifest[manifest.version].readmeFilename = 'README.md';
-    npmManifest[manifest.version]._nodeVersion = getNodeVersion();
-    npmManifest[manifest.version]._npmVersion = getNpmVersion();
-    npmManifest[manifest.version].dist = {
+    return {
+        'name': npmManifest.name,
+        'versions': updateVersions(npmManifest, manifest, tgzFile, shasum, integrity, registry),
+        'time': updateTimeObject(npmManifest),
+        'users': npmManifest.users,
+        'dist-tags': {
+            "latest": manifest.version
+        },
+        '_uplinks': { },
+        '_distfiles': { },
+        '_attachments': updateAttachments(npmManifest, manifest, tgzFile, shasum),
+        '_id': npmManifest.name,
+        'readme': getReadmeContent(),
+    };
+}
+
+function updateVersions(npmManifest, manifest, tgzFile, shasum, integrity, registry) {
+    let versions = { };
+    for (let version in npmManifest.versions) {
+        versions[version] = npmManifest.versions[version];
+    }
+    versions[manifest.version] = manifest;
+    versions[manifest.version]._id = `${manifest.name}@${manifest.version}`;
+    versions[manifest.version].readmeFilename = 'README.md';
+    versions[manifest.version]._nodeVersion = getNodeVersion();
+    versions[manifest.version]._npmVersion = getNpmVersion();
+    versions[manifest.version].dist = {
         'integrity': integrity,
         'shasum': shasum,
         'tarball': `${registry}/${manifest.name}/-/${tgzFile}`
     }
-    npmManifest[manifest.version].contributors = [];
-    npmManifest['time']['modified'] = new Date().toISOString();
-    npmManifest['time'][manifest.version] = new Date().toISOString();
-    npmManifest['dist-tags'].latest = manifest.version;
-    npmManifest['_attachments'][tgzFile] = {
+    versions[manifest.version].contributors = [];
+    return versions;
+}
+
+function updateTimeObject(npmManifest) {
+    let time = { 
+        'created': npmManifest.time.created,
+        'modified': new Date().toISOString(),
+    };
+    for (let version in npmManifest.versions) {
+        time[version] = npmManifest.time[version];
+    }
+    return time;
+}
+
+function updateAttachments(npmManifest, manifest, tgzFile, shasum) {
+    let attachments = { };
+    for (let attachment in npmManifest._attachments) {
+        attachments[attachment] = npmManifest._attachments[attachment];
+    }
+    attachments[tgzFile] = {
         "shasum": shasum,
         "version": manifest.version
-    }
-    npmManifest['readme'] = getReadmeContent();
-    return npmManifest;
+    };
+    return attachments;
 }
 
 function createManifest(jsonFile, tgzFile, shasum, integrity, registry) {
