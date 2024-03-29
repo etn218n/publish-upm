@@ -1,13 +1,12 @@
-const {execSync} = require('child_process');
+const utility = require('./utility.js');
 
-const packageRegistry ='https://duy-npm.com';
-
-if (process.argv.length !== 3) {
+if (process.argv.length !== 5) {
     console.log('Usage: node main.js <package-json-file>');
     process.exit(-1);
 }
 
-let packageJson = require(process.argv[2]);
-let result = execSync(`npm view ${packageJson.name} versions --registry ${packageRegistry}`);
+let jsonFile = process.argv[2];
+let outputDirectory = process.argv[3];
+let registry = process.argv[4];
 
-console.log(result.toString());
+utility.createPackage(jsonFile, outputDirectory, registry);

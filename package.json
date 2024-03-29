@@ -1,0 +1,18 @@
+{
+  "name": "com.duy.nolib",
+  "version": "1.4.0",
+  "displayName": "Nolib",
+  "description": "Library for node-based state machine and other data structures",
+  "unity": "2023.2",
+  "documentationUrl": "",
+  "changelogUrl": "",
+  "licensesUrl": "",
+  "dependencies": {},
+  "keywords": [],
+  "samples": null,
+  "author": {
+    "name": "Duy",
+    "email": "etn218n@gmail.com",
+    "url": "https://github.com/etn218n"
+  }
+}
