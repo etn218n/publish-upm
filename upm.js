@@ -47,13 +47,14 @@ function publish(manifest, registry, storageDirectory) {
 function createTgzFile(manifest, packageDirectory) {
     let tgz = {
         filename: `${manifest.name}-${manifest.version}.tgz`,
+        filepath: `${packageDirectory}/${manifest.name}`,
         shasum: '',
         integrity: ''
     };
-    let log = execSync(`tar -cvzf ${packageDirectory}/${tgz.filename} .`)
+    let log = execSync(`tar -cvzf ${tgz.filepath} .`)
     console.log(log.toString());
-    tgz.shasum = execSync(`shasum ${tgz.filename}`).toString().split(' ')[0];
-    tgz.integrity = 'sha512-' + execSync(`openssl dgst -sha512 -binary ${tgz.filename} | openssl base64 -A`).toString();
+    tgz.shasum = execSync(`shasum ${tgz.filepath}`).toString().split(' ')[0];
+    tgz.integrity = 'sha512-' + execSync(`openssl dgst -sha512 -binary ${tgz.filepath} | openssl base64 -A`).toString();
     return tgz;
 }
 
