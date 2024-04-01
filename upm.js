@@ -32,9 +32,9 @@ function publish(manifest, registry, storageDirectory) {
             console.log(`Version ${manifest.version} already published`);
             break;
         case PackageStatus.NotPublished:
-            let tgz = createTgzFile(manifest);
+            let tgz = createTgzFile(manifest, packageDirectory);
             let npmManifest = require(`${packageDirectory}/package.json`);
-            fs.renameSync(tgz.filename, `${packageDirectory}/${tgz.filename}`);
+            //fs.renameSync(tgz.filename, `${packageDirectory}/${tgz.filename}`);
             let updatedNpmManifest = updateNpmManifest(npmManifest, manifest, tgz.filename, tgz.shasum, tgz.integrity, registry);
             fs.writeFileSync(`${packageDirectory}/package.json`, JSON.stringify(updatedNpmManifest, null, 2));
             return packageDirectory;
@@ -44,13 +44,13 @@ function publish(manifest, registry, storageDirectory) {
     }
 }
 
-function createTgzFile(manifest) {
+function createTgzFile(manifest, packageDirectory) {
     let tgz = {
         filename: `${manifest.name}-${manifest.version}.tgz`,
         shasum: '',
         integrity: ''
     };
-    let log = execSync(`tar -cvzf ${manifest.name}-${manifest.version}.tgz .`)
+    let log = execSync(`tar -cvzf ${packageDirectory}/${tzg.filename} .`)
     console.log(log.toString());
     tgz.shasum = execSync(`shasum ${tgz.filename}`).toString().split(' ')[0];
     tgz.integrity = execSync(`openssl dgst -sha512 -binary ${tgz.filename} | openssl base64 -A`).toString();
