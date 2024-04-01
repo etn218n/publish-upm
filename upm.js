@@ -50,7 +50,8 @@ function createTgzFile(manifest) {
         shasum: '',
         integrity: ''
     };
-    execSync(`sudo tar -cvzf ${manifest.name}-${manifest.version}.tgz .`)
+    let log = execSync(`tar -cvzf ${manifest.name}-${manifest.version}.tgz .`)
+    console.log(log.toString());
     tgz.shasum = execSync(`shasum ${tgz.filename}`).toString().split(' ')[0];
     tgz.integrity = execSync(`openssl dgst -sha512 -binary ${tgz.filename} | openssl base64 -A`).toString();
     return tgz;
