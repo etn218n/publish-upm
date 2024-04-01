@@ -6,9 +6,10 @@ if (process.argv.length !== 5) {
     process.exit(-1);
 }
 
-let storageDirectory = processStorageDirectory(process.argv[2]);
-let jsonFile = process.argv[3];
+let storageDirectory = processDirectoryPath(process.argv[2]);
+let workingDirectory = processDirectoryPath(process.argv[3]);
 let registry = process.argv[4];
+let jsonFile = `${workingDirectory}package.json`;
 
 if (fs.existsSync(jsonFile)) {
     let manifest = require(jsonFile);
@@ -19,7 +20,7 @@ else {
     process.exit(-1);
 }
 
-function processStorageDirectory(storageDirectory) {
+function processDirectoryPath(storageDirectory) {
     if (storageDirectory.endsWith('/'))
         return storageDirectory;
     else
