@@ -8,6 +8,7 @@ const PackageStatus = {
 }
 
 function checkPackageStatus(version, name, storageDirectory) {
+    console.log(`${storageDirectory}${name}`);
     if (fs.existsSync(`${storageDirectory}${name}`))
         return fs.existsSync(`${storageDirectory}${name}/${name}-${version}.tgz`) ? PackageStatus.Published : PackageStatus.NotPublished;
     else
