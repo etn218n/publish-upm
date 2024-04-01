@@ -47,7 +47,7 @@ function publish(manifest, registry, storageDirectory) {
 function createTgzFile(manifest, packageDirectory) {
     let tgz = {
         filename: `${manifest.name}-${manifest.version}.tgz`,
-        filepath: `${packageDirectory}/${manifest.name}`,
+        filepath: `${packageDirectory}/${manifest.name}-${manifest.version}.tgz`,
         shasum: '',
         integrity: ''
     };
