@@ -32,10 +32,10 @@ function publish(manifest, registry, storageDirectory) {
             console.log(`Version ${manifest.version} already published`);
             break;
         case PackageStatus.NotPublished:
-            let tgz = pack();
+            //let tgz = pack(); // TODO: find prepacked file
+            execSync(`tar -xzf ${manifest.name}-${manifest.version}.tgz .`)
             let npmManifest = require(`${packageDirectory}/package.json`);
-            fs.copyFileSync(tgz.filename, `${packageDirectory}/${tgz.filename}`);
-            fs.unlinkSync(tgz.filename);
+            fs.renameSync(tgz.filename, `${packageDirectory}/${tgz.filename}`);
             let updatedNpmManifest = updateNpmManifest(npmManifest, manifest, tgz.filename, tgz.shasum, tgz.integrity, registry);
             fs.writeFileSync(`${packageDirectory}/package.json`, JSON.stringify(updatedNpmManifest, null, 2));
             return packageDirectory;
