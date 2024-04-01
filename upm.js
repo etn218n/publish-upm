@@ -8,7 +8,6 @@ const PackageStatus = {
 }
 
 function checkPackageStatus(version, name, storageDirectory) {
-    console.log(`${storageDirectory}${name}`);
     if (fs.existsSync(`${storageDirectory}${name}`))
         return fs.existsSync(`${storageDirectory}${name}/${name}-${version}.tgz`) ? PackageStatus.Published : PackageStatus.NotPublished;
     else
@@ -30,7 +29,7 @@ function publish(manifest, registry, storageDirectory) {
     let packageDirectory = `${storageDirectory}${manifest.name}`;
     switch (publishStatus) {
         case PackageStatus.Published:
-            console.log('Version already published');
+            console.log(`Version ${manifest.version} already published`);
             break;
         case PackageStatus.NotPublished:
             let tgz = pack();
