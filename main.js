@@ -1,17 +1,16 @@
 const upm = require('./upm.js');
 const fs = require('fs');
 
-if (process.argv.length !== 5) {
+if (process.argv.length !== 4) {
     console.log('Usage: node main.js <package-json-file>');
     process.exit(-1);
 }
 
 let storageDirectory = processDirectoryPath(process.argv[2]);
-let jsonFile = process.argv[3];
 let registry = process.argv[4];
 
-if (fs.existsSync(jsonFile)) {
-    let manifest = require(jsonFile);
+if (fs.existsSync('./package.json')) {
+    let manifest = require('./package.json');
     upm.publish(manifest, registry, storageDirectory);
 }
 else {
