@@ -10,7 +10,7 @@ let storageDirectory = processDirectoryPath(process.argv[2]);
 let registry = process.argv[3];
 
 if (fs.existsSync('./package.json')) {
-    let manifest = require('./package.json');
+    let manifest = JSON.parse(fs.readFileSync('./package.json'), 'utf8');
     upm.publish(manifest, registry, storageDirectory);
 }
 else {
