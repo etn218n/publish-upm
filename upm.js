@@ -53,7 +53,7 @@ function createTgzFile(manifest, packageDirectory) {
     let log = execSync(`tar -cvzf ${packageDirectory}/${tgz.filename} .`)
     console.log(log.toString());
     tgz.shasum = execSync(`shasum ${tgz.filename}`).toString().split(' ')[0];
-    tgz.integrity = execSync(`openssl dgst -sha512 -binary ${tgz.filename} | openssl base64 -A`).toString();
+    tgz.integrity = 'sha512-' + execSync(`openssl dgst -sha512 -binary ${tgz.filename} | openssl base64 -A`).toString();
     return tgz;
 }
 
