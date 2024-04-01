@@ -7,7 +7,7 @@ if (process.argv.length !== 4) {
 }
 
 let storageDirectory = processDirectoryPath(process.argv[2]);
-let registry = process.argv[4];
+let registry = process.argv[3];
 
 if (fs.existsSync('./package.json')) {
     let manifest = require('./package.json');
