@@ -34,7 +34,6 @@ function publish(manifest, registry, storageDirectory) {
         case PackageStatus.NotPublished:
             let tgz = createTgzFile(manifest, packageDirectory);
             let npmManifest = require(`${packageDirectory}/package.json`);
-            //fs.renameSync(tgz.filename, `${packageDirectory}/${tgz.filename}`);
             let updatedNpmManifest = updateNpmManifest(npmManifest, manifest, tgz.filename, tgz.shasum, tgz.integrity, registry);
             fs.writeFileSync(`${packageDirectory}/package.json`, JSON.stringify(updatedNpmManifest, null, 2));
             return packageDirectory;
@@ -97,7 +96,7 @@ function updateVersions(npmManifest, manifest, tgzFile, shasum, integrity, regis
 
 function updateTimeObject(npmManifest, manifest) {
     let modifiedTime = new Date().toISOString();
-    let time = { 
+    let time = {
         'created': npmManifest.time.created,
         'modified': modifiedTime,
     };
